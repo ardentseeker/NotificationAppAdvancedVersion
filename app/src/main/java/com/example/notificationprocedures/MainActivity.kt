@@ -5,6 +5,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -37,16 +39,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun startNotification() {
+    private fun startNotification()
+    {
         val intent = Intent(applicationContext, MainActivity::class.java)
-        val pendingIntent = if (Build.VERSION.SDK_INT >= 23) {
-            PendingIntent.getActivity(
-                applicationContext,
-                0,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        } else {
+
+        val pendingIntent = if (Build.VERSION.SDK_INT >= 23)
+        { PendingIntent.getActivity(applicationContext, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        }
+        else
+        {
             PendingIntent.getActivity(
                 applicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
             )
@@ -80,7 +82,8 @@ class MainActivity : AppCompatActivity() {
                 applicationContext, 2, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT
             )
         }
-
+            val icon : Bitmap = BitmapFactory.decodeResource(resources,R.drawable.pic)
+            val text :String = resources.getString(R.string.big_text)
             val builder = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -96,6 +99,9 @@ class MainActivity : AppCompatActivity() {
                     .setAutoCancel(true)
                     .addAction(R.drawable.notifications, "Toast msg",actionPending)
                     .addAction(R.drawable.notifications, "Dismissed",dismissPending)
+                    .setLargeIcon(icon)
+                    .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+                    //.setStyle(NotificationCompat.BigPictureStyle().bigPicture(icon).bigLargeIcon(null))
             } else {
 
                 builder.setSmallIcon(R.drawable.notifications)
@@ -106,6 +112,9 @@ class MainActivity : AppCompatActivity() {
                     .setAutoCancel(true)
                     .addAction(R.drawable.notifications,"Toast msg",actionPending)
                     .addAction(R.drawable.notifications, "Dismissed",dismissPending)
+                    .setLargeIcon(icon)
+                    .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+                    //.setStyle(NotificationCompat.BigPictureStyle().bigPicture(icon).bigLargeIcon(null))
             }
 
             val notificationManagerCompat = NotificationManagerCompat.from(applicationContext)
