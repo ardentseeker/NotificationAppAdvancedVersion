@@ -16,7 +16,7 @@ import com.example.notificationprocedures.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
 
     private var CHANNEL_ID = "1"
-    var counter:Int = 0
+    var counter: Int = 0
     lateinit var mainBinding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,56 +31,85 @@ class MainActivity : AppCompatActivity() {
 
             counter++
             mainBinding.button.text = counter.toString()
-            if (counter % 5 == 0)
-            {
+            if (counter % 5 == 0) {
                 startNotification()
             }
         }
     }
-    fun startNotification()
-    {
-        val intent = Intent(applicationContext,MainActivity::class.java)
-        val pendingIntent = if (Build.VERSION.SDK_INT >= 23)
-        {
-            PendingIntent.getActivity(applicationContext,0,intent
-                ,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+    fun startNotification() {
+        val intent = Intent(applicationContext, MainActivity::class.java)
+        val pendingIntent = if (Build.VERSION.SDK_INT >= 23) {
+            PendingIntent.getActivity(
+                applicationContext,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
         } else {
-            PendingIntent.getActivity(applicationContext,0,intent
-                ,PendingIntent.FLAG_UPDATE_CURRENT)
+            PendingIntent.getActivity(
+                applicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
+            )
 
         }
-        val builder = NotificationCompat.Builder(applicationContext,CHANNEL_ID)
+        //action Button
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        val actionIntent = Intent(applicationContext, Receiver::class.java)
+        actionIntent.putExtra("toast", "this is notification msg")
+        val actionPending = if (Build.VERSION.SDK_INT >= 23)
         {
-            val channel = NotificationChannel(CHANNEL_ID,"1",NotificationManager.IMPORTANCE_DEFAULT)
-            val manager:NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.createNotificationChannel(channel)
-            builder.setSmallIcon(R.drawable.notifications)
-                .setContentTitle("Title")
-                .setContentText("Notification Text")
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
-        }
-        else
+            PendingIntent.getBroadcast(applicationContext, 1, actionIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        } else
         {
-
-            builder.setSmallIcon(R.drawable.notifications)
-                .setContentTitle("My Title")
-                .setContentText("this is notification text")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
-
+            PendingIntent.getBroadcast(
+                applicationContext, 1, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        }
+        //dismissButton
+        val dismissIntent = Intent(applicationContext, ReceiverDismiss::class.java)
+        val dismissPending = if (Build.VERSION.SDK_INT >= 23)
+        {
+            PendingIntent.getBroadcast(applicationContext, 2, dismissIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        } else
+        {
+            PendingIntent.getBroadcast(
+                applicationContext, 2, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            )
         }
 
-        val notificationManagerCompat = NotificationManagerCompat.from(applicationContext)
-        notificationManagerCompat.notify(1,builder.build())
+            val builder = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel =
+                    NotificationChannel(CHANNEL_ID, "1", NotificationManager.IMPORTANCE_DEFAULT)
+                val manager: NotificationManager =
+                    getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                manager.createNotificationChannel(channel)
+                builder.setSmallIcon(R.drawable.notifications)
+                    .setContentTitle("Title")
+                    .setContentText("Notification Text")
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true)
+                    .addAction(R.drawable.notifications, "Toast msg",actionPending)
+                    .addAction(R.drawable.notifications, "Dismissed",dismissPending)
+            } else {
 
+                builder.setSmallIcon(R.drawable.notifications)
+                    .setContentTitle("My Title")
+                    .setContentText("this is notification text")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true)
+                    .addAction(R.drawable.notifications,"Toast msg",actionPending)
+                    .addAction(R.drawable.notifications, "Dismissed",dismissPending)
+            }
 
+            val notificationManagerCompat = NotificationManagerCompat.from(applicationContext)
+            notificationManagerCompat.notify(1, builder.build())
 
-
-
+        }
     }
-}
